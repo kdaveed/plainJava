@@ -69,6 +69,7 @@ public class TripleLib {
 		List<Triple> triple = new ArrayList<Triple>();
 		triple.add(new Triple(new MainInputNode("subjectUri"), "obo:BFO_0000051",
 				"objectUri"));
+		//triple.add(new Triple("objectUri", "rdfs:label", "assayLabel"));
 		triple.add(new MultiTriple("objectUri", "obo:BFO_0000051",
 				"assay"));
 		triple.add(new MultiTriple("specimenCollectionProcess", "obo:OBI_0000293",

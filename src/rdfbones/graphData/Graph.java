@@ -35,6 +35,7 @@ public class Graph {
 	public String firstNode = null;
 	public String globalLabelKey = null;
 	public String globalLabelValue;
+  public String objectUriType = null;
 
 	// Triples
 	public List<Triple> dataTriples = new ArrayList<Triple>();
@@ -63,6 +64,7 @@ public class Graph {
 	// Data Input - type query
 	public List<String> classesToSelect;
 	public List<Triple> typeQueryTriples;
+  public List<Triple> subClassTriples;
 
 	// Data Retrival
 	public List<Triple> dataRetreivalQuery;
@@ -287,6 +289,7 @@ public class Graph {
 	 */
 
 	public String saveInitialData(JSONObject inputObject) {
+		
 		Map<String, String> variableMap = new HashMap<String, String>();
 		if(this.globalLabelKey != null){
 			this.globalLabelValue = JSON.string(inputObject, this.globalLabelKey);
