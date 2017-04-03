@@ -5,7 +5,10 @@ import org.json.JSONObject;
 import rdfbones.form.FormConfiguration;
 import rdfbones.formProcessing.AJAXController;
 import rdfbones.graphData.Graph;
+import rdfbones.lib.DebugLib;
 import rdfbones.lib.JSON;
+import rdfbones.lib.TripleLib;
+import rdfbones.rdfdataset.TripleCollector;
 import webappconnector.PlainJavaWebappConnector;
 
 public class Test {
@@ -17,12 +20,12 @@ public class Test {
 				.println(JSON.debug(graph.getExistingData("subject1", "object1")));
 	}
 
-	public static String delete(String formType, String graphVar) {
+	public static void delete(String formType, String graphVar) {
 
 		FormConfiguration fc = fc(formType);
 		Graph graph = fc.dataGraph.graphCache.get(graphVar);
-		return graph.deleteData(JSONTest.getObject("delete_" + formType + "_"
-				+ graphVar));
+		log(graph.deleteData(JSONTest.getObject("delete_" + formType + "_"
+				+ graphVar)));
 	}
 
 	public static void input(String formType) {
@@ -72,7 +75,7 @@ public class Test {
 			fc =  new FormConfiguration();
 			break;
 		}
-		//fc.setWebapp(new PlainJavaWebappConnector());
+		fc.setWebapp(new PlainJavaWebappConnector());
 		return fc;
 	}
 

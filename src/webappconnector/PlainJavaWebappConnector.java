@@ -38,6 +38,8 @@ public class PlainJavaWebappConnector implements WebappConnector{
   
   public List<Map<String, String>> sparqlResult(String queryStr, List<String> uris, List<String> literals){
 
+		System.out.println(queryStr);
+
   	this.queries.put(queryStr);	
   	return QueryUtils.getResult(queryStr, uris, literals);
   }

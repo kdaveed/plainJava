@@ -22,7 +22,7 @@ import rdfbones.rdfdataset.LabelTriple;
 import rdfbones.rdfdataset.MultiTriple;
 import rdfbones.rdfdataset.RDFNode;
 import rdfbones.rdfdataset.Triple;
-import rdfbones.form.ExistingInstanceSelector;
+import rdfbones.form.InstanceSelector;
 import rdfbones.form.FormConfiguration;
 import rdfbones.formProcessing.WebappConnector;
 
@@ -49,6 +49,8 @@ public class Graph {
 	// Data Input - Storage
 	public List<Triple> triplesToStore;
 	public List<String> newInstances;
+	public List<RDFNode> newInstancesNode;
+	
 	public List<String> instances;
 	public List<String> inputInstances;
 	public List<String> constantLiterals;
@@ -67,7 +69,7 @@ public class Graph {
   public List<Triple> subClassTriples;
 
 	// Data Retrival
-	public List<Triple> dataRetreivalQuery;
+  public List<Triple> dataRetreivalQuery;
 	public List<String> urisToSelect;
 	public List<String> literalsToSelect;
 
@@ -89,6 +91,14 @@ public class Graph {
 	WebappConnector webapp;
 	public Graph mainGraph;
 	public FormConfiguration formConfiguration;
+	
+	public Graph(List<String> nodes) {
+		
+		this.newInstancesNode = new ArrayList<RDFNode>();
+		for(String node : nodes){
+			this.newInstancesNode.add(new RDFNode(node));	
+		}
+	}
 	
 	public Graph(List<Triple> triples, List<Triple> schemeTriples,
 			WebappConnector webapp) {
@@ -168,7 +178,7 @@ public class Graph {
 					this.dataRetreivalQuery, this.urisToSelect, this.literalsToSelect,
 					this.varName);
 		}
-		if (this.typeQueryTriples.size() > 0 && this.inputClasses.size() > 0
+		if (this.typeQueryTriples.size() > 0 //&& this.inputClasses.size() > 0
 				&& this.classesToSelect.size() > 0) {
 			this.typeQueryTriples.addAll(GraphLib
 					.optionalClassLabelTripels(this.classesToSelect));
@@ -222,6 +232,7 @@ public class Graph {
 				System.out.println("FirstNode : " + this.firstNode);
 				for (int i = 0; i < this.existingData.length(); i++) {
 					JSONObject object = JSON.object(this.existingData, i);
+					N3.extendObject(object, this);
 					JSON.put(object, "formData", this.getFormData(object, parentData));
 				}
 			}
@@ -230,6 +241,7 @@ public class Graph {
 				for (String key : this.subGraphs.keySet()) {
 					Graph subGraph = this.subGraphs.get(key);
 					JSONObject object = JSON.object(this.existingData, i);
+					N3.extendObject(object, this);
 					JSON.put(object, "formData", this.getFormData(object, parentData));
 					String initialValue = JSON.string(object, subGraph.varName);
 					JSONArray data = subGraph.getGraphData(initialValue,
@@ -244,7 +256,7 @@ public class Graph {
 		
 		if( this.mainGraph.formConfiguration.formElements.containsKey(this.firstNode)) {
 			if(this.mainGraph.formConfiguration.formElements.get(this.firstNode)
-					instanceof ExistingInstanceSelector){
+					instanceof InstanceSelector){
 				return false;
 			}
 		}
@@ -260,15 +272,20 @@ public class Graph {
 			VariableDependency varDep = this.mainGraph.variableDependencies
 					.get(formNode);
 			JSONObject inputData = JSON.obj();
+			System.out.println("VariableDependency inputs : \n");
 			for (String input : varDep.inputs) {
 				if (object.has(input)) {
+					System.out.println("1 \n");
 					JSON.copyValue(inputData, object, input);
-				} else if (parentData.has(input)) {
-					JSON.copyValue(inputData, parentData, input);
+				//} else if (parentData.has(input)) {
+				//	System.out.println("2 \n");
+				//	JSON.copyValue(inputData, parentData, input);
 				} else if(this.mainGraph.mainInputValues.containsKey(input)){
+					System.out.println("3 \n");
 					String value = this.mainGraph.mainInputValues.get(input);
 					JSON.put(inputData, input, value);
 				}
+				System.out.println("inputVar :" + input  + "---  value :" + JSON.string(inputData, input));
 			}
 			JSON.put(formData, formNode, varDep.getData(inputData));
 		}
@@ -328,6 +345,8 @@ public class Graph {
 			Map<String, String> variableMap) {
 
 		if (this.typeRetriever != null) {
+			System.out.println("TypeRetriever not null");
+			
 			String inputValue = JSON.string(inputObject, this.inputClasses.get(0));
 			List<Map<String, String>> data = this.typeRetriever.getData(inputValue);
 			if (data.size() > 0) {
@@ -348,7 +367,7 @@ public class Graph {
 			}
 		}
 
-		for (String mainInputNode : this.mainInputNodes) {
+		for (String mainInputNode : this.mainGraph.mainInputNodes) {
 			instanceMap.put(mainInputNode,
 					this.mainGraph.mainInputValues.get(mainInputNode));
 		}
@@ -371,6 +390,8 @@ public class Graph {
 
 		// Creating string to create
 		this.graphDataMap = variableMap;
+		System.out.println("\n\n");
+		DebugLib.mapLog(this.graphDataMap, this);
 		//List<Triple> triplesToStore = GraphLib.addLabelTriples(this.triplesToStore);
 		Map<String, String> labelMap = GraphLib.getLabelMap(this);
 		
